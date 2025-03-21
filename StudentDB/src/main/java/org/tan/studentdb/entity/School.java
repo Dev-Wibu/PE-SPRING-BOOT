@@ -22,6 +22,7 @@ public class School {
 
     public School() {
     }
+
     public School(int id, String name, String address, double fee) {
         this.id = id;
         this.name = name;

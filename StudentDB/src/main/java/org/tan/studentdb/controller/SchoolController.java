@@ -3,6 +3,7 @@ package org.tan.studentdb.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.tan.studentdb.entity.School;
+import org.tan.studentdb.entity.Student;
 import org.tan.studentdb.service.SchoolService;
 
 import java.util.List;
@@ -41,6 +42,11 @@ public class SchoolController {
     @PostMapping("/update")
     public School update(@RequestBody School school) {
         return schoolService.save(school);
+    }
+
+    @GetMapping("/findStudentsByName")
+    public List<Student> findStudentsByName(@RequestParam String name) {
+        return schoolService.findStudentsByName(name);
     }
 
     @DeleteMapping("/delete")
