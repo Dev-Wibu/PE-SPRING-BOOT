@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student List</title>
+</head>
+<body>
+<h1>Hello</h1>
+
+<a th:if="${role==1}"  th:href="@{'/create'}">Add new book</a>
+<div class="search">
+    <form action="/get" method="get" style="margin: 10px 120px">
+        <label for="key">Input keyword:</label>
+        <input style="width: 50%" type="search" id="key" name="key" placeholder="Search" th:value="${key}">
+        <button type="submit">Search</button>
+    </form>
+        <form action="/get" method="get" >
+        <button>Show All</button>
+    </form>
+    <form method="get" action="logout" style="margin: 10px 125px">
+        <button>Logout</button>
+    </form>
+</div>
+<!--Table-->
+<table border="1" style="border-collapse: collapse; margin: auto" width="80%">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Yob</th>
+        <th>School Name</th>
+
+    </tr>
+    <tbody>
+    <tr th:each="s : ${students}">
+        <td th:text="${s.id}"></td>
+        <td th:text="${s.name}"></td>
+        <td th:text="${s.age}"></td>
+        <td th:text="${s.yob}"></td>
+        <td th:text="${s.school.name}"></td>
+
+        <td th:if="${role==1}"   style="width: 60px">
+            <form action="get" th:action="@{'/update/'+${s.id}}">
+                <button >Update</button>
+            </form>
+        </td>
+        <td th:if="${role==1}"  style="width: 60px" >
+            <form action="post" th:action="@{'/delete/'+${s.id}}">
+                <button onclick="return confirm('Are u sure ?');">Delete</button>
+            </form>
+
+        </td>
+    </tr>
+    </tbody>
+</table>
+<!--Update/Create From-->
+<div th:if="${student != null}">
+    <h1 th:text="${student.id != 0} ? 'Update Form' : 'Create Form'"></h1>
+    <form method="post" th:action="@{/save}">
+        <table>
+            <!-- ID (chỉ hiển thị khi update) -->
+            <tr th:if="${student.id != 0}">
+                <td><label for="id">ID:</label></td>
+                <td>
+                    <input th:value="${student.id}" type="hidden" id="id" name ="id" >
+
+                </td>
+
+            <!-- Title -->
+            <tr>
+                <td><label for="name">Name:</label></td>
+                <td>
+
+                    <input  th:value="${student.name}" type="text" name="name" id="name" required>
+                </td>
+            </tr>
+            <!-- Author -->
+            <tr>
+                <td><label for="age">Age:</label></td>
+                <td>
+                    <input th:value="${student.age}" type="text" name="age" id="age">
+                </td>
+            </tr>
+            <!-- Price -->
+            <tr>
+                <td><label for="yob">YOB:</label></td>
+                <td>
+                    <input th:value="${student.yob}" type="text" name="yob" id="yob">
+                </td>
+            </tr>
+            <!-- Category -->
+            <tr>
+                <td><label for="school">School:</label></td>
+                <td>
+                    <select th:if="${student.id == 0}"  id="school" name="school" required>
+                        <option value="" >-- Select School --</option>
+                        <option th:each="s : ${schools}"
+                                th:value="${s.id}"
+                                th:text="${s.name}"
+                                >
+                        </option>
+                    </select>
+                    <select th:if="${student.id != 0}"  id="school" name="school" required>
+                        <option th:each="s : ${schools}"
+                                th:value="${s.id}"
+                                th:text="${s.name}"
+                                th:selected="${student.school!= null && s.id == student.school.id }">
+                        </option>
+                    </select>
+                </td>
+            </tr>
+            <!-- Button -->
+            <tr>
+                <td colspan="2">
+                    <button th:if="${student.id != 0}" type="submit">Update</button>
+                    <button th:if="${student.id == 0}" type="submit">Create</button>
+                </td>
+            </tr>
+        </table>
+        <p th:if="error" th:text="${error}" style="color: red"></p>
+    </form>
+</div>
+<form method="get" action="logout">
+    <button>Logout</button>
+</form>
+</body>
+</html>
