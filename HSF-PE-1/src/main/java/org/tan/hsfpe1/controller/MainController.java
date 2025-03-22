@@ -22,6 +22,7 @@ public class MainController {
             return "redirect:/login";
         }
         return "index";
+
     }
 
     @GetMapping("/login")
@@ -45,6 +46,7 @@ public class MainController {
         session.invalidate();
         return "redirect:/login";
     }
+
 
 
 }
