@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h1> Hello FPT </h1>
+
+  <div th:unless="${session.role == 'customer'}">
+
+  <!-- Form Add (chỉ hiển thị cho admin và staff) -->
+  <div th:if="${session.role == 'admin'}" >
+    <form action="/create" method="post" th:object="${student}">
+      <table>
+        <tr>
+          <td><label for="name">Name:</label></td>
+          <td><input type="text" id="name" name="name" required></td>
+        </tr>
+        <tr>
+          <td><label for="gpa">GPA:</label></td>
+          <td><input type="text" id="gpa" name="gpa" required></td>
+        </tr>
+        <tr>
+          <td><label for="gender">Gender:</label></td>
+          <td>
+            <select id="gender" name="gender" required>
+              <option value="true">Male</option>
+              <option value="false">Female</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><label for="school">School:</label></td>
+          <td>
+            <select id="school" name="school.id" required>
+              <option th:each="school : ${schools}" th:value="${school.id}"
+                      th:text="${school.name}"></option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button type="submit">Create Student</button>
+          </td>
+        </tr>
+      </table>
+    </form>
+    <br>
+  </div>
+
+  <!-- Search Form (chỉ hiển thị cho admin và staff) -->
+  <div>
+    <form action="/search" method="get">
+      <input type="text" name="name" placeholder="Search by title" th:value="${searchName}" required>
+      <button type="submit">Search</button>
+      <button type="button" onclick="window.location.href='/'">Back</button>
+      <a href="/logout">Đăng xuất</a>
+    </form>
+    <br>
+  </div>
+
+  <!-- Table (chỉ hiển thị cho admin và staff, nút Delete/Update chỉ cho admin) -->
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>GPA</th>
+      <th>Gender</th>
+      <th>School</th>
+      <th th:if="${session.role == 'admin'}">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="student : ${students}">
+      <td th:text="${student.id}"></td>
+      <td th:text="${student.name}"></td>
+      <td th:text="${student.gpa}"></td>
+      <td th:text="${student.gender} ? 'Male' : 'Female' "></td>
+      <td th:text="${student.school.name}"></td>
+      <td th:if="${session.role == 'admin'}">
+        <form action="/delete" method="post" style="display:inline;">
+          <input type="hidden" name="id" th:value="${student.id}">
+          <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa cuốn sách này không?');">
+            Delete
+          </button>
+        </form>
+        <button type="button" th:attr="onclick='showUpdateForm(\'' + ${student.id} + '\')'">Update</button>
+        <input type="hidden" th:value="${student.school.id}" class="school-id">
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- Form Update (chỉ hiển thị khi admin nhấn Update) -->
+  <div id="updateForm" style="display:none; margin-top: 20px;">
+    <h2>Update Student</h2>
+    <form action="/update" method="post" th:object="${student}">
+      <input type="hidden" id="updateId" name="id">
+      <table>
+        <tr>
+          <td><label for="updateName">Name:</label></td>
+          <td><input type="text" id="updateName" name="name" required></td>
+        </tr>
+        <tr>
+          <td><label for="updateGpa">GPA:</label></td>
+          <td><input type="text" id="updateGpa" name="gpa" required></td>
+        </tr>
+        <tr>
+          <td><label for="updateGender">Gender:</label></td>
+          <td>
+            <select id="updateGender" name="gender" required>
+              <option value="true">Male</option>
+              <option value="false">Female</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><label for="updateSchool">School:</label></td>
+          <td>
+            <select id="updateSchool" name="school.id" required>
+              <option th:each="school : ${schools}" th:value="${school.id}"
+                      th:text="${school.name}"></option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align: center">
+            <button type="submit">Save Changes</button>
+            <button type="button" onclick="hideUpdateForm()">Cancel</button>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  </div>
+
+  <!-- Nội dung cho customer -->
+  <div th:if="${session.role == 'customer'}">
+    <p style="color: red;">Bạn không có quyền truy cập!</p>
+    <a href="/logout">Đăng xuất</a>
+  </div>
+
+  <!-- Script (chỉ cần cho admin) -->
+  <script th:inline="javascript" >
+    function showUpdateForm(studentId) {
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const idField = row.querySelector('input[name="id"]');
+        if (idField && idField.value == studentId) {
+          const name = row.cells[1].innerText;
+          const gpa = row.cells[2].innerText;
+          const genderText = row.cells[3].innerText; // "Male" hoặc "Female"
+          const gender = genderText === 'Male' ? 'true' : 'false'; // Chuyển đổi
+          const schoolId = row.querySelector('.school-id').value; // Lấy category.id
+
+
+          document.getElementById('updateId').value = studentId;
+          document.getElementById('updateName').value = name;
+          document.getElementById('updateGpa').value = gpa;
+          document.getElementById('updateGender').value = gender;
+          document.getElementById('updateSchool').value = schoolId; // Gán category.id
+          document.getElementById('updateForm').style.display = 'block';
+        }
+      });
+    }
+
+    function hideUpdateForm() {
+      document.getElementById('updateForm').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>

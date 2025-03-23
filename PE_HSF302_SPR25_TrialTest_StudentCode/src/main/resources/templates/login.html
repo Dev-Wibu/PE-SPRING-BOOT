@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+</head>
+<body style = "Height:350px ; Width:450px  ; font-family: Arial; background-color: #33FFCC">
+
+<h1 style = "font-size: 18px">Login Page</h1>
+
+
+<p th:if="${error}" style="color: red;">Sai tên đăng nhập hoặc mật khẩu!</p>
+<form action="/login" method="post"    style = "font-size: 13px">
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username"><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password"><br><br>
+    <input type="submit" value="Submit">
+</form>
+</body>
+</html>

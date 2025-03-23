@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body style = "Height:450px; Width:650px; font-family: Arial;background-color: #33FFFF ">
+<h1 > Management Page </h1>
+
+<div th:unless="${session.role == 'customer'}">
+
+<!-- Form Add (chỉ hiển thị cho admin và staff) -->
+<div th:if="${session.role == 'admin'}">
+    <form action="/create" method="post" th:object="${movie}">
+        <table>
+            <tr>
+                <td><label for="moviename">Movie Name:</label></td>
+                <td style="background-color:#33FF33; text-align: left; color:white"><input type="text" id="moviename" name="movieName" required></td>
+            </tr>
+            <tr>
+                <td><label for="duration">Duration:</label></td>
+                <td><input type="text" id="duration" name="duration" required></td>
+            </tr>
+            <tr>
+                <td><label for="actor">Actor:</label></td>
+                <td><input type="text" id="actor" name="actor" required></td>
+            </tr>
+            <tr>
+                <td><label for="status">Status:</label></td>
+                <td>
+                    <select id="status" name="status" required>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                        <option value="COMING">Coming</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="director">Director:</label></td>
+                <td>
+                    <select id="director" name="director.id" required>
+                        <option th:each="director : ${directors}" th:value="${director.id}"
+                                th:text="${director.directorName}"></option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="submit">Create Movie</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <br>
+</div>
+
+<!-- Search Form (chỉ hiển thị cho admin và staff) -->
+<div>
+    <form action="/search" method="get">
+        <input type="text" name="keyword" placeholder="Search by title" th:value="${searchName}" required>
+        <button type="submit">Search</button>
+        <button type="button" onclick="window.location.href='/'">Back</button>
+        <a href="/logout">Đăng xuất</a>
+    </form>
+    <br>
+</div>
+
+<!-- Table (chỉ hiển thị cho admin và staff, nút Delete/Update chỉ cho admin) -->
+<table>
+    <thead>
+    <tr>
+        <th>MovieID</th>
+        <th>MovieName</th>
+        <th>Duration</th>
+        <th>Actor</th>
+        <th>Status</th>
+        <th>DirectorID</th>
+        <th th:if="${session.role == 'admin'}" >Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="movie : ${movies}">
+        <td th:text="${movie.movieId}"></td>
+        <td th:text="${movie.movieName}"></td>
+        <td th:text="${movie.duration}"></td>
+        <td th:text="${movie.actor}"></td>
+        <td th:text="${movie.status}"></td>
+        <td th:text="${movie.director.id}"></td>
+        <td th:if="${session.role == 'admin'}">
+            <form action="/delete" method="post" style="display:inline;">
+                <input type="hidden" name="id" th:value="${movie.movieId}">
+                <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa không?');">
+                    Delete
+                </button>
+            </form>
+            <button type="button" th:attr="onclick='showUpdateForm(\'' + ${movie.movieId} + '\')'">Update</button>
+            <input type="hidden" th:value="${movie.director.id}" class="director-id">
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</div>
+
+<!-- Nội dung cho customer -->
+<div th:if="${session.role == 'customer'}">
+    <p style="color: red;">Bạn không có quyền truy cập!</p>
+    <a href="/logout">Đăng xuất</a>
+</div>
+
+<!-- Form Update (chỉ hiển thị khi admin nhấn Update) -->
+<div id="updateForm" style="display:none; margin-top: 20px;">
+    <h2>Update Movie</h2>
+    <form action="/update" method="post" th:object="${movie}">
+        <input type="hidden" id="updateId" name="movieId">
+        <table>
+            <tr>
+                <td><label for="updateMovieName">Movie Name:</label></td>
+                <td><input type="text" id="updateMovieName" name="movieName" required></td>
+            </tr>
+            <tr>
+                <td><label for="updateDuration">Duration:</label></td>
+                <td><input type="text" id="updateDuration" name="duration" required></td>
+            </tr>
+            <tr>
+                <td><label for="updateActor">Actor:</label></td>
+                <td><input type="text" id="updateActor" name="actor" required></td>
+            </tr>
+            <tr>
+                <td><label for="updateStatus">Status:</label></td>
+                <td>
+                    <select id="updateStatus" name="status" required>
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                        <option value="COMING">COMING</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="updateDirector">Director:</label></td>
+                <td>
+                    <select id="updateDirector" name="director.id" required>
+                        <option th:each="director : ${directors}" th:value="${director.id}"
+                                th:text="${director.directorName}"></option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center">
+                    <button type="submit">Save Changes</button>
+                    <button type="button" onclick="hideUpdateForm()">Cancel</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<!-- Script -->
+<script th:inline="javascript" >
+    function showUpdateForm(movieId) {
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const idField = row.querySelector('input[name="id"]');
+            if (idField && idField.value == movieId) {
+                const movieName = row.cells[1].innerText;
+                const duration = row.cells[2].innerText;
+                const actor = row.cells[3].innerText;
+                const status = row.cells[4].innerText;
+                const directorId = row.querySelector('.director-id').value;
+
+
+                document.getElementById('updateId').value = movieId;
+                document.getElementById('updateMovieName').value = movieName;
+                document.getElementById('updateDuration').value = duration;
+                document.getElementById('updateActor').value = actor;
+                document.getElementById('updateStatus').value = status;
+                document.getElementById('updateDirector').value = directorId;
+                document.getElementById('updateForm').style.display = 'block';
+            }
+        });
+    }
+
+    function hideUpdateForm() {
+        document.getElementById('updateForm').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

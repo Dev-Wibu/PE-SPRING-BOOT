@@ -1,0 +1,104 @@
+
+
+package org.hoangtugio.hsfpe01.controller;
+
+
+import HttpSession;
+import org.hoangtugio.hsfpe01.model.Account;
+import org.hoangtugio.hsfpe01.model.Book;
+import org.hoangtugio.hsfpe01.model.Category;
+import org.hoangtugio.hsfpe01.service.AccountService;
+import org.hoangtugio.hsfpe01.service.BookService;
+import org.hoangtugio.hsfpe01.service.CategoryService;
+import Autowired;
+import Controller;
+import Model;
+import GetMapping;
+import PostMapping;
+
+import List;
+
+@Controller
+public class BookController {
+
+    @Autowired
+    BookService bookService;
+
+    @Autowired
+    CategoryService categoryService;
+
+    @Autowired
+    AccountService accountService;
+
+    @GetMapping
+    public String index(Model model, HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        if (role == null) {
+            return "redirect:/login";
+        }
+        List<Book> books = bookService.getAllBooks();
+        List<Category> categories = categoryService.getAllCategories();
+        model.addAttribute("books", books);
+        model.addAttribute("categories", categories);
+        return "index";
+    }
+
+    @PostMapping("/create")
+    public String createBook(Book book) {
+        bookService.create(book);
+        return "redirect:/";
+    }
+
+    @PostMapping("/delete")
+    public String deleteBook(int id) {
+        bookService.delete(id);
+        return "redirect:/";
+    }
+
+    @PostMapping("/update")
+    public String updateBook(Book book) {
+        bookService.update(book);
+        return "redirect:/";
+    }
+
+    @GetMapping("/search")
+    public String searchBook(String title, Model model) {
+        List<Book> books = bookService.findByTitle(title);
+        List<Category> categories = categoryService.getAllCategories();
+        model.addAttribute("books", books);
+        model.addAttribute("categories", categories);
+        model.addAttribute("searchTitle", title);
+        return "index";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String login(String username, String password, Model model, HttpSession session) {
+
+        Account account = accountService.findByUsername(username);
+        if (account != null && account.getPassword().equals(password)) {
+            if (account.getRole() ==1) {
+                session.setAttribute("role", "admin");
+            } else if (account.getRole() == 2) {
+                session.setAttribute("role", "staff");
+            } else {
+                session.setAttribute("role", "customer");
+            }
+            return "redirect:/";
+        }
+        model.addAttribute("error", true);
+        return "login";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
+
+}
+
